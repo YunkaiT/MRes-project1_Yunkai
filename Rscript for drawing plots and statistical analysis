@@ -1,33 +1,30 @@
-#######################  Drawing the overall distribution of samples with different HR statuses
- 
-
+# Distribution of HR scores in HGSOC 
 library(ggplot2)
 library(readr)
 library(dplyr)
 library(forcats)
 getwd()
-# 读取数据
+#set the working directory to the one that has the data files
 setwd("C:\\Users\\Yunkai Tang\\OneDrive\\文档")
 
 data <- read_csv("filtered_326_classification.csv")
 
-# 计算30x深度下的分类数量
+# Since use the 30x results as the benchmark, calculate the number of samples in different groups under 30x
 data_counts <- data %>%
   count(`30x`) %>%
   mutate(`30x` = fct_recode(`30x`, "HRD" = "Yes", "HRP" = "No"))
 
-# 添加Germline分类
+# Add the germline group
 data_counts <- data_counts %>%
   add_row(`30x` = "Germline", n = 22)
 
-# 改变条形顺序
 data_counts$`30x` <- factor(data_counts$`30x`, 
                             levels = c("Germline", "HRD", "Borderline", "HRP"))
 
-# 指定颜色
+
 bar_colors <- c("Germline" = "#4EDCED", "HRD" = "#ED9E4E", "Borderline" = "#F0E225", "HRP" = "#73F025")
 
-# 绘制柱状图并添加数值标签
+
 ggplot(data_counts, aes(x = `30x`, y = n, fill = `30x`)) +
   geom_bar(stat = "identity") +
   geom_text(aes(label = n), vjust = -0.3, size = 5) +
@@ -38,133 +35,20 @@ ggplot(data_counts, aes(x = `30x`, y = n, fill = `30x`)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# 保存图像（如果需要）
 ggsave('HRD_Classifications_Bar_Chart.png', width = 10, height = 6, dpi = 300)
 
 
-
-library(ggplot2)
-library(readr)
-library(dplyr)
-library(forcats)
-
-# 读取数据
-data <- read_csv("326_classification.csv")
-
-# 计算30x深度下的分类数量
-data_counts <- data %>%
-  count(`30x`) %>%
-  mutate(`30x` = fct_recode(`30x`, "HRD" = "Yes", "HRP" = "No"))
-
-# 对HRP的数值减去22
-data_counts <- data_counts %>%
-  mutate(n = ifelse(`30x` == "HRP", n - 22, n))
-
-# 添加Germline分类
-data_counts <- data_counts %>%
-  add_row(`30x` = "Germline", n = 22)
-
-# 改变条形顺序
-data_counts$`30x` <- factor(data_counts$`30x`, 
-                            levels = c("Germline", "HRD", "Borderline", "HRP"))
-
-# 指定颜色
-bar_colors <- c("Germline" = "#4EDCED", "HRD" = "#ED9E4E", "Borderline" = "#F0E225", "HRP" = "#73F025")
-
-# 绘制柱状图并添加数值标签
-ggplot(data_counts, aes(x = `30x`, y = n, fill = `30x`)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = n), vjust = -0.3, size = 5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth",
-       x = "Classification",
-       y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-# 保存图像（如果需要）
-ggsave('HRD_Classifications_Bar_Chart.png', width = 10, height = 6, dpi = 300)
-
-
-#####################################################################################
-
-library(ggplot2)
-library(readr)
-library(dplyr)
-library(forcats)
-
-# 假设data和data_modified已经按之前的方式加载和处理
-
-# 合并数据并调整顺序和分组
-combined_data <- bind_rows(original_data_counts, modified_data_counts) %>%
-  mutate(`30x` = factor(`30x`, levels = c("Germline", "HRD", "Borderline", "HRP")))
-
-
-
-bar_colors <- c("Germline.Original" = "#005DF9", "Germline.Modified" = "#00C7F9",
-                "HRD.Original" = "#FF6C1D", "HRD.Modified" = "#FAAC7C",
-                "Borderline.Original" = "#E2B414", "Borderline.Modified" = "#F3E200",
-                "HRP.Original" = "#1FC70A", "HRP.Modified" = "#80F202")
-
-# 使用修正后的颜色映射绘制并列柱状图
-ggplot(combined_data, aes(x = `30x`, y = n, fill = interaction(`30x`, Group, sep = "."))) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  geom_text(aes(label = n), vjust = -0.3, position = position_dodge(width = 0.8), size = 3.5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth",
-       x = "Classification",
-       y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-library(ggplot2)
-library(readr)
-library(dplyr)
-library(forcats)
-
-# 假设original_data_counts和modified_data_counts已经按之前的方式加载和处理
-
-# 假设这里combined_data是合并后的数据
-# 从数据中移除"Germline.Original"（如果需要的话）
-combined_data <- combined_data %>%
-  filter(!(Group == "Original" & `30x` == "Germline"))
-
-# 保证`30x`列的顺序，确保Germline出现在最前面，这里只有Germline.Modified需要显示
-combined_data$`30x` <- factor(combined_data$`30x`,
-                              levels = c("Germline", "HRD", "Borderline", "HRP"))
-
-# 定义颜色，注意这里我们已经移除了"Germline.Original"的颜色定义
-bar_colors <- c("Germline.Modified" = "#00C7F9",
-                "HRD.Original" = "#FF6C1D", "HRD.Modified" = "#FAAC7C",
-                "Borderline.Original" = "#E2B414", "Borderline.Modified" = "#F3E200",
-                "HRP.Original" = "#1FC70A", "HRP.Modified" = "#80F202")
-
-# 绘制并列柱状图
-ggplot(combined_data, aes(x = `30x`, y = n, fill = interaction(`30x`, Group, sep = "."))) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  geom_text(aes(label = n), vjust = -0.3, position = position_dodge(width = 0.8), size = 3.5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth",
-       x = "Classification",
-       y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-# 先筛选出除了Germline.Modified以外的所有数据
 combined_data_other <- combined_data_filtered %>% 
   filter(!(Group == "Modified" & `30x` == "Germline"))
 
-# 单独筛选出Germline.Modified的数据
+
 combined_data_germline_modified <- combined_data_filtered %>% 
   filter(Group == "Modified" & `30x` == "Germline")
 
-# 绘制图形
+
 ggplot() +
-  # 为除了Germline.Modified的柱子使用标准宽度
   geom_bar(data = combined_data_other, aes(x = `30x`, y = n, fill = interaction(`30x`, Group, sep = ".")), 
            stat = "identity", position = position_dodge(width = 0.8)) +
-  # 为Germline.Modified柱子单独指定宽度
   geom_bar(data = combined_data_germline_modified, aes(x = `30x`, y = n, fill = interaction(`30x`, Group, sep = ".")), 
            stat = "identity", position = position_dodge(width = 0.8), width = 0.4) +
   geom_text(data = combined_data_filtered, aes(x = `30x`, y = n, label = n, group = interaction(`30x`, Group, sep = ".")), 
@@ -177,27 +61,23 @@ ggplot() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-library(ggplot2)
-library(dplyr)
-library(forcats)
 
-# 创建模拟数据
 combined_data <- data.frame(
   `30x` = c("HRD", "HRD", "Borderline", "Borderline", "HRP", "HRP", "Germline"),
-  n = c(40, 40, 30, 30, 34, 12, 22), # 假设数值，其中一个HRP减去了22，只有一个Germline
+  n = c(40, 40, 30, 30, 34, 12, 22), 
   Group = c("Original", "Modified", "Original", "Modified", "Original", "Modified", "Modified")
 )
 
-# 确保`30x`列的因子水平顺序正确，Germline在最前
+
 combined_data$`30x` <- factor(combined_data$`30x`, levels = c("Germline", "HRD", "Borderline", "HRP"))
 
-# 定义每个分类组合的颜色
+
 bar_colors <- c("HRD.Original" = "#FF6C1D", "HRD.Modified" = "#FAAC7C",
                 "Borderline.Original" = "#E2B414", "Borderline.Modified" = "#F3E200",
                 "HRP.Original" = "#1FC70A", "HRP.Modified" = "#80F202",
                 "Germline.Modified" = "#00C7F9") # Germline仅在Modified中存在
 
-# 绘制图表
+
 ggplot(combined_data, aes(x = `30x`, y = n, fill = interaction(Group, `30x`, sep = "."))) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
   geom_text(aes(label = n), vjust = -0.3, position = position_dodge(width = 0.8), size = 3.5) +
@@ -206,396 +86,245 @@ ggplot(combined_data, aes(x = `30x`, y = n, fill = interaction(Group, `30x`, sep
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# 保存图表（如果需要）
 ggsave("HRD_Classifications_Bar_Chart_Final.png", width = 10, height = 6, dpi = 300)
 
 
 
 
-################################### Drawing the boxplot of the HRD scores and different depths
 
+
+
+
+
+
+# Draw the scatter plot shows 3 typical cases (1 HRP, 1HRD, 1 HR borderline)
+# Load necessary libraries
 library(ggplot2)
-library(readr)
-library(dplyr)
-library(forcats)
+library(gridExtra)
 
-data <- read_csv("filtered_326_classification.csv")
-
-
-data_counts <- data %>%
-  count(`30x`) %>%
-  mutate(`30x` = fct_recode(`30x`, "HRD" = "Yes", "HRP" = "No"))
-
-
-data_counts <- data_counts %>%
-  add_row(`30x` = "Germline", n = 22)
-
-
-data_counts$`30x` <- factor(data_counts$`30x`, 
-                            levels = c("Germline", "HRD", "Borderline", "HRP"))
-
-
-bar_colors <- c("Germline" = "#4EDCED", "HRD" = "#ED9E4E", "Borderline" = "#F0E225", "HRP" = "#73F025")
-
-
-ggplot(data_counts, aes(x = `30x`, y = n, fill = `30x`)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = n), vjust = -0.3, size = 5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth",
-       x = "Classification",
-       y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-ggsave('HRD_Classifications_Bar_Chart.png', width = 10, height = 6, dpi = 300)
-
-
-library(ggplot2)
-library(readr)
-library(dplyr)
-library(forcats)
-
-
-data <- read_csv("326_classification.csv")
-
-
-data_counts <- data %>%
-  count(`30x`) %>%
-  mutate(`30x` = fct_recode(`30x`, "HRD" = "Yes", "HRP" = "No"))
-
-data_counts <- data_counts %>%
-  mutate(n = ifelse(`30x` == "HRP", n - 22, n))
-
-# 添加Germline分类
-data_counts <- data_counts %>%
-  add_row(`30x` = "Germline", n = 22)
-
-
-data_counts$`30x` <- factor(data_counts$`30x`, 
-                            levels = c("Germline", "HRD", "Borderline", "HRP"))
-
-
-bar_colors <- c("Germline" = "#4EDCED", "HRD" = "#ED9E4E", "Borderline" = "#F0E225", "HRP" = "#73F025")
-
-
-ggplot(data_counts, aes(x = `30x`, y = n, fill = `30x`)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = n), vjust = -0.3, size = 5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth",
-       x = "Classification",
-       y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-ggsave('HRD_Classifications_Bar_Chart.png', width = 10, height = 6, dpi = 300)
-
-
-library(ggplot2)
-library(readr)
-library(dplyr)
-library(forcats)
-
-combined_data <- bind_rows(original_data_counts, modified_data_counts) %>%
-  mutate(`30x` = factor(`30x`, levels = c("Germline", "HRD", "Borderline", "HRP")))
-
-
-
-bar_colors <- c("Germline.Original" = "#005DF9", "Germline.Modified" = "#00C7F9",
-                "HRD.Original" = "#FF6C1D", "HRD.Modified" = "#FAAC7C",
-                "Borderline.Original" = "#E2B414", "Borderline.Modified" = "#F3E200",
-                "HRP.Original" = "#1FC70A", "HRP.Modified" = "#80F202")
-
-
-ggplot(combined_data, aes(x = `30x`, y = n, fill = interaction(`30x`, Group, sep = "."))) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  geom_text(aes(label = n), vjust = -0.3, position = position_dodge(width = 0.8), size = 3.5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth",
-       x = "Classification",
-       y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-library(ggplot2)
-library(readr)
-library(dplyr)
-library(forcats)
-
-# 假设original_data_counts和modified_data_counts已经按之前的方式加载和处理
-
-# 假设这里combined_data是合并后的数据
-# 从数据中移除"Germline.Original"（如果需要的话）
-combined_data <- combined_data %>%
-  filter(!(Group == "Original" & `30x` == "Germline"))
-
-# 保证`30x`列的顺序，确保Germline出现在最前面，这里只有Germline.Modified需要显示
-combined_data$`30x` <- factor(combined_data$`30x`,
-                              levels = c("Germline", "HRD", "Borderline", "HRP"))
-
-# 定义颜色，注意这里我们已经移除了"Germline.Original"的颜色定义
-bar_colors <- c("Germline.Modified" = "#00C7F9",
-                "HRD.Original" = "#FF6C1D", "HRD.Modified" = "#FAAC7C",
-                "Borderline.Original" = "#E2B414", "Borderline.Modified" = "#F3E200",
-                "HRP.Original" = "#1FC70A", "HRP.Modified" = "#80F202")
-
-# 绘制并列柱状图
-ggplot(combined_data, aes(x = `30x`, y = n, fill = interaction(`30x`, Group, sep = "."))) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  geom_text(aes(label = n), vjust = -0.3, position = position_dodge(width = 0.8), size = 3.5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth",
-       x = "Classification",
-       y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-
-# 先筛选出除了Germline.Modified以外的所有数据
-combined_data_other <- combined_data_filtered %>% 
-  filter(!(Group == "Modified" & `30x` == "Germline"))
-
-# 单独筛选出Germline.Modified的数据
-combined_data_germline_modified <- combined_data_filtered %>% 
-  filter(Group == "Modified" & `30x` == "Germline")
-
-# 绘制图形
-ggplot() +
-  # 为除了Germline.Modified的柱子使用标准宽度
-  geom_bar(data = combined_data_other, aes(x = `30x`, y = n, fill = interaction(`30x`, Group, sep = ".")), 
-           stat = "identity", position = position_dodge(width = 0.8)) +
-  # 为Germline.Modified柱子单独指定宽度
-  geom_bar(data = combined_data_germline_modified, aes(x = `30x`, y = n, fill = interaction(`30x`, Group, sep = ".")), 
-           stat = "identity", position = position_dodge(width = 0.8), width = 0.4) +
-  geom_text(data = combined_data_filtered, aes(x = `30x`, y = n, label = n, group = interaction(`30x`, Group, sep = ".")), 
-            position = position_dodge(width = 0.8), vjust = -0.3, size = 3.5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth",
-       x = "Classification",
-       y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-library(ggplot2)
-library(dplyr)
-library(forcats)
-
-# 创建模拟数据
-combined_data <- data.frame(
-  `30x` = c("HRD", "HRD", "Borderline", "Borderline", "HRP", "HRP", "Germline"),
-  n = c(40, 40, 30, 30, 34, 12, 22), # 假设数值，其中一个HRP减去了22，只有一个Germline
-  Group = c("Original", "Modified", "Original", "Modified", "Original", "Modified", "Modified")
+# Create data frame for plotting
+patient_data <- data.frame(
+  Group = rep(c('Patient 1', 'Patient 2', 'Patient 3'), each=5),
+  Sample = rep(paste('Sample', 1:5), 3),
+  HRD_Score = c(4, 2, 4, 5, 6,  # Patient 1's scores
+                37, 46, 41, 38, 40,  # Patient 2's scores
+                16, 14, 15, 18, 15)  # Patient 3's scores
 )
 
-# 确保`30x`列的因子水平顺序正确，Germline在最前
-combined_data$`30x` <- factor(combined_data$`30x`, levels = c("Germline", "HRD", "Borderline", "HRP"))
+# Split data by group
+groups <- split(patient_data, patient_data$Group)
 
-# 定义每个分类组合的颜色
-bar_colors <- c("HRD.Original" = "#FF6C1D", "HRD.Modified" = "#FAAC7C",
-                "Borderline.Original" = "#E2B414", "Borderline.Modified" = "#F3E200",
-                "HRP.Original" = "#1FC70A", "HRP.Modified" = "#80F202",
-                "Germline.Modified" = "#00C7F9") # Germline仅在Modified中存在
+# Color mapping for each patient
+colors <- c('Patient 1' = '#0CBA00', 'Patient 2' = '#F54700', 'Patient 3' = '#FFB300')
 
-# 绘制图表
-ggplot(combined_data, aes(x = `30x`, y = n, fill = interaction(Group, `30x`, sep = "."))) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  geom_text(aes(label = n), vjust = -0.3, position = position_dodge(width = 0.8), size = 3.5) +
-  scale_fill_manual(values = bar_colors) +
-  labs(title = "Count of HRD Classifications at 30x Depth", x = "Classification", y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-# 保存图表（如果需要）
-ggsave("HRD_Classifications_Bar_Chart_Final.png", width = 10, height = 6, dpi = 300)
-
-
-
-
-
-###################################### Conducting statistical analysis
-
-
-# 假设您的数据框架名为df，并且已经有了对应的测序深度列（30x, 20x, ... 0.1x）
-# 加载必要的库
-library(readr)
-library(dplyr)
-library(tidyr)
-library(reshape2)
-
-# 加载数据
-df <- read_csv("filtered_326_HRD_value.csv")
-
-# 查看数据的前几行
-head(df)
-
-# 加载必要的库
-
-
-# 将数据从宽格式转换为长格式
-df_long <- reshape2::melt(df, id.vars = "SampleID", 
-                          measure.vars = c("30x", "20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x"),
-                          variable.name = "Depth", value.name = "HRD_Value")
-
-# 进行不分组ANOVA分析
-anova_result <- aov(HRD_Value ~ Depth, data = df_long)
-summary(anova_result)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 进行分组ANOVA分析
-
-# 加载必要的库
-library(readr)
-library(dplyr)
-library(tidyr)
-library(reshape2)
-library(stats)
-
-# 假设df是您的原始数据框架
-# 首先，计算HRD状态
-df$HRD_Status <- ifelse(df$`30x` < 15, "HRP",
-                        ifelse(df$`30x` <= 19, "Borderline", "HRD"))
-
-# 将数据从宽格式转换为长格式
-df_long <- melt(df, id.vars = c("SampleID", "HRD_Status"), 
-                measure.vars = c("30x", "20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x"),
-                variable.name = "Depth", value.name = "HRD_Value")
-
-
-
-# 分组进行ANOVA分析
-results <- list()
-
-for (status in c("HRD", "HRP", "Borderline")) {
-  # 过滤特定组的数据
-  df_filtered <- df_long %>% filter(HRD_Status == status)
-  
-  # 对过滤后的数据进行ANOVA
-  anova_result <- aov(HRD_Value ~ Depth, data = df_filtered)
-  results[[status]] <- summary(anova_result)
+# Function to create plot for each patient with specific colors
+plot_patient_data <- function(data, group_name) {
+  ggplot(data, aes(x = Sample, y = HRD_Score)) +
+    geom_rect(aes(xmin=-Inf, xmax=Inf, ymin=19, ymax=Inf), fill="orange", alpha=0.05) + # Shaded area for y >= 19
+    geom_rect(aes(xmin=-Inf, xmax=Inf, ymin=15, ymax=19), fill="yellow", alpha=0.05) + # Shaded area for 15 < y < 19
+    geom_rect(aes(xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=15), fill="green", alpha=0.05) + # Shaded area for y <= 15
+    geom_point(size = 5, color = colors[group_name]) + # Specify point color
+    geom_hline(yintercept = 15, color = 'blue', linetype = 'dashed') + # Add blue dashed line at y=15
+    geom_hline(yintercept = 19, color = 'red', linetype = 'dashed') + # Add red dashed line at y=19
+    scale_y_continuous(limits = c(0, max(patient_data$HRD_Score) + 5), breaks = seq(0, max(patient_data$HRD_Score) + 5, by = 5)) +
+    labs(x = 'Sample', y = 'HRD Score') +
+    theme_minimal() # Use a minimal theme
 }
 
-# 输出结果
-print(results$HRD)
-print(results$HRP)
-print(results$Borderline)
+# Generate plots for each patient with specific colors
+plots <- mapply(plot_patient_data, groups, names(groups), SIMPLIFY = FALSE)
+
+# Arrange plots in a grid
+do.call(gridExtra::grid.arrange, c(plots, ncol = 3))
 
 
 
 
 
-#t检验
 
-# 加载必要的库
-library(tidyverse)
 
-# 假设df_long是包含所有样本在所有深度下的HRD值的长格式数据框架
-# 并且它有三列：SampleID（样本ID），Depth（深度），HRD_Value（HRD值）
 
-# 首先，将数据分割成以30x和其他深度为组的配对数据
-depths_to_compare <- c("20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x")
-results <- list()
 
-for (depth in depths_to_compare) {
-  df_30x <- df_long %>% filter(Depth == "30x")
-  df_depth <- df_long %>% filter(Depth == depth)
+
+
+
+
+
+# Drawing the boxplot of the HRD scores and different depths
+# Draw the general boxplot for all samples
+  library(ggplot2)
+  library(readr)
+  library(dplyr)
+  library(tidyr)
+  getwd()
+  setwd("C:\\Users\\Yunkai Tang\\OneDrive\\文档")
+  data_hrdvalue <- read_csv("326_HRD_value.csv")
   
-  # 确保按SampleID对齐
-  df_merged <- merge(df_30x, df_depth, by = "SampleID", suffixes = c("_30x", sprintf("_%s", depth)))
+  data_long <- pivot_longer(data_hrdvalue, 
+                            cols = -SampleID, 
+                            names_to = "Depth", 
+                            values_to = "HRD_Value")
   
-  # 执行配对t检验
-  t_test_result <- t.test(df_merged$HRD_Value_30x, df_merged[[paste0("HRD_Value_", depth)]], paired = TRUE)
+  data_long$Depth <- factor(data_long$Depth, levels = c('30x', '20x', '5x', '1x', '0.8x', '0.6x', '0.5x', '0.4x', '0.3x', '0.2x', '0.1x'))
   
-  # 存储结果
-  results[[depth]] <- t_test_result
-}
+  
+  ggplot(data_long, aes(x = Depth, y = HRD_Value, fill = Depth)) +
+    geom_boxplot() +
+    scale_fill_manual(values = c('30x' = "#E5989B", '20x' = "#F39C12", '5x' = "#8BECF8", '1x' = "#FAD7A0", '0.8x' = "#EEFF7C", '0.6x' = "#B8EE52", '0.5x' = "#FFE866", '0.4x' = "#FFC784", '0.3x' = "#FF9784", '0.2x' = "#76D7C4", '0.1x' = "#AED6F1")) +
+    labs(title = "HRD Values Distribution by Sampling Depth",
+         x = "Downsampling Depth",
+         y = "HRD Value") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
 
-# 输出结果
-results
+  ggsave("HRD_distribution_boxplot_custom_gradient.png", width = 12, height = 8, dpi = 300)
+  
+  
+  
+
+  
+  
+  # Draw the boxplot that shows the downsampling trend for both tumor samples with a qualified purity and without
+
+  data_all <- read_csv("326_HRD_value.csv")
+  data_filtered <- read_csv("filtered_326_HRD_value.csv")
+  data_all <- data_all %>% filter(`30x` != 0)
+  data_all_long <- pivot_longer(data_all, 
+                                cols = -SampleID, 
+                                names_to = "Depth", 
+                                values_to = "HRD_Value") %>%
+    mutate(Source = "All tumor samples")
+  
+  data_filtered_long <- pivot_longer(data_filtered, 
+                                     cols = -SampleID, 
+                                     names_to = "Depth", 
+                                     values_to = "HRD_Value") %>%
+    mutate(Source = "Tumor samples with purity ≥ 30%")
+  
+
+  data_combined <- bind_rows(data_all_long, data_filtered_long)
+  
+  # Order the different depths
+  data_combined$Depth <- factor(data_combined$Depth, 
+                                levels = c('30x', '20x', '5x', '1x', '0.8x', '0.6x', '0.5x', '0.4x', '0.3x', '0.2x', '0.1x'))
+  
+  # Draw the boxplot,#FF9784 color referes to all tumor samples, and #8BECF8 refers to tumor samples with puity >= 30%
+  ggplot(data_combined, aes(x = Depth, y = HRD_Value, fill = Source)) +
+    geom_boxplot(position = position_dodge(width = 0.8)) + # 使用position_dodge来并列显示
+    scale_fill_manual(values = c("All tumor samples" = "#FF9784", 
+                                 "Tumor samples with purity ≥ 30%" = "#8BECF8")) +
+    labs(title = "HRD Values Distribution by Sampling Depth and Sample Source",
+         x = "Downsampling Depth",
+         y = "HRD Value (number of LGAs)") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  ggsave("/mnt/data/HRD_distribution_boxplot_combined_filtered.png", width = 12, height = 8, dpi = 300)
+  
+  
+  
+  
+  
+# Draw the boxplot for each subgroup of HR status
+
+####HRD
+
+  data_hrdvalue <- read_csv("filtered_326_HRD_value_HRD.csv")
+  data_long <- pivot_longer(data_hrdvalue, 
+                            cols = -SampleID, 
+                            names_to = "Depth", 
+                            values_to = "HRD_Value")
+
+  data_long$Depth <- factor(data_long$Depth, levels = c('30x', '20x', '5x', '1x', '0.8x', '0.6x', '0.5x', '0.4x', '0.3x', '0.2x', '0.1x'))
+  
+  ggplot(data_long, aes(x = Depth, y = HRD_Value, fill = Depth)) +
+    geom_boxplot() +
+    scale_fill_manual(values = c('30x' = "#D64541", '20x' = "#E77E23", '5x' = "#F39C12", '1x' = "#F8C471", '0.8x' = "#FAD7A0", '0.6x' = "#FDEBD0", '0.5x' = "#FADBD8", '0.4x' = "#F5B7B1", '0.3x' = "#D2B4DE", '0.2x' = "#EBDEF0", '0.1x' = "#F4ECF7"  )) +
+    labs(title = "HRD Values Distribution by Sampling Depth",
+         x = "Downsampling Depth",
+         y = "HRD Value") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ 
+  ggsave("HRD_distribution_boxplot_custom_gradient.png", width = 12, height = 8, dpi = 300)
+  
+  
+  ####Borderline
+  data_hrdvalue <- read_csv("filtered_326_HRD_value_Borderline.csv")
+  data_long <- pivot_longer(data_hrdvalue, 
+                            cols = -SampleID, 
+                            names_to = "Depth", 
+                            values_to = "HRD_Value")
+  data_long$Depth <- factor(data_long$Depth, levels = c('30x', '20x', '5x', '1x', '0.8x', '0.6x', '0.5x', '0.4x', '0.3x', '0.2x', '0.1x'))
+  
+  ggplot(data_long, aes(x = Depth, y = HRD_Value, fill = Depth)) +
+    geom_boxplot() +
+    scale_fill_manual(values = c('30x' = "#E5989B", '20x' = "#C39BD3", '5x' = "#76D7C4", '1x' = "#7FB3D5", '0.8x' = "#85C1E9", '0.6x' = "#A9DFBF", '0.5x' = "#D7BDE2", '0.4x' = "#FADBD8", '0.3x' = "#FDEBD0", '0.2x' = "#E8DAEF", '0.1x' = "#EAF2F8")) +
+    
+    labs(title = "HRD Values Distribution by Sampling Depth",
+         x = "Downsampling Depth",
+         y = "HRD Value") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  
+  
+  
+  
+  
+  ####HRP
+
+  data_hrdvalue <- read_csv("filtered_326_HRD_value_HRP.csv")
+  data_long <- pivot_longer(data_hrdvalue, 
+                            cols = -SampleID, 
+                            names_to = "Depth", 
+                            values_to = "HRD_Value")
+  
+  data_long$Depth <- factor(data_long$Depth, levels = c('30x', '20x', '5x', '1x', '0.8x', '0.6x', '0.5x', '0.4x', '0.3x', '0.2x', '0.1x'))
+  
+  
+  ggplot(data_long, aes(x = Depth, y = HRD_Value, fill = Depth)) +
+    geom_boxplot() +
+    scale_fill_manual(values = c('30x' = "#2980B9", '20x' = "#3498DB", '5x' = "#5DADE2", '1x' = "#85C1E9", '0.8x' = "#AED6F1", '0.6x' = "#D6EAF8", '0.5x' = "#EBF5FB", '0.4x' = "#5499C7", '0.3x' = "#48C9B0", '0.2x' = "#76D7C4", '0.1x' = "#A3E4D7")) +
+    
+    
+    
+    labs(title = "HRD Values Distribution by Sampling Depth",
+         x = "Downsampling Depth",
+         y = "HRD Value") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 
-# 加载tidyverse包，它包括dplyr和其他有用的函数
-library(tidyverse)
-
-# 假设df_long已经被加载并且包含SampleID, HRD_Status, Depth, HRD_Value列
-
-# 定义需要比较的深度
-depths_to_compare <- c("20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x")
-
-# 获取独特的HRD状态值
-hrd_statuses <- unique(df_long$HRD_Status)
-
-# 确保输出是干净的，没有前一个命令的错误
-print(hrd_statuses)
-print(depths_to_compare)
-
-
-
-results <- list()
-
-for(status in hrd_statuses) {
-  for(depth in depths_to_compare) {
-    # 筛选出当前状态下30x的数据
-    df_30x <- df_long %>% filter(Depth == "30x", HRD_Status == status)
-    # 筛选出当前深度下的数据
-    df_depth <- df_long %>% filter(Depth == depth, HRD_Status == status)
-    # 确保按SampleID对齐
-    df_merged <- merge(df_30x, df_depth, by = "SampleID", suffixes = c("_30x", paste0("_", depth)))
-    # 执行配对t检验
-    t_test_result <- t.test(df_merged$HRD_Value_30x, df_merged[[paste0("HRD_Value_", depth)]], paired = TRUE)
-    # 存储结果
-    results[[paste(status, depth, sep = "_")]] <- t_test_result
-  }
-}
-
-# 查看结果
-results
-"""
 
 
 
 
 
-########################################## Drawing the line graph
-# 安装并加载必要的包
+
+# Draw the line graphs of Accuracy vs downsampling depths
+
+# Load the necessary packeges for line graph
 library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(readr)
-library(scales) # 加载scales包用于百分比格式化
-
+library(scales) 
+getwd()
 # 读取数据
+
+setwd("C:\\Users\\Yunkai Tang\\OneDrive\\文档")
 classification <- readr::read_csv("filtered_326_classification.csv")
 
-# 数据从宽格式转换为长格式
+# Process the data format
 classification_long <- classification %>%
   pivot_longer(cols = -SampleID, names_to = "Sequencing_Depth", values_to = "Result")
 
-# 设置Sequencing_Depth的顺序
 sequencing_depth_levels <- c("30x", "20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x")
 
-# 总体趋势分析
-# 计算以30x结果作为标准的准确度
+# Draw the line graph for the general accuracy
+# Use the 30x results as the benchmarks
 standard_30x <- classification_long %>%
   filter(Sequencing_Depth == "30x") %>%
   select(SampleID, Result)
@@ -607,7 +336,6 @@ accuracy_by_depth <- classification_long %>%
   summarise(Accuracy = mean(Accurate, na.rm = TRUE)) %>%
   mutate(Sequencing_Depth = factor(Sequencing_Depth, levels = sequencing_depth_levels))
 
-# 绘制总体趋势图
 ggplot(accuracy_by_depth, aes(x = Sequencing_Depth, y = Accuracy, group = 1)) +
   geom_line() +
   geom_point() +
@@ -615,7 +343,7 @@ ggplot(accuracy_by_depth, aes(x = Sequencing_Depth, y = Accuracy, group = 1)) +
   labs(title = "General accuracy trend of all tumor samples across different depths", x = "Sequencing Depth", y = "Accuracy (%)") +
   theme_minimal()
 
-# 对于30x下分类为Yes、Borderline、No的分组图，可以使用一个函数来简化代码
+# Draw the line graphs for HRD (correspongding to "Yes" in the data), HRP ("No") and HR borderline ("Borderline") subgroups
 plot_accuracy_for_category <- function(category) {
   yes_samples_30x <- classification_long %>%
     filter(Sequencing_Depth == "30x", Result == category) %>%
@@ -636,13 +364,13 @@ plot_accuracy_for_category <- function(category) {
     theme_minimal()
 }
 
-# 绘制对于30x下分类为Yes的分组图
+# HRD
 plot_accuracy_for_category("Yes")
 
-# 绘制对于30x下分类为Borderline的分组图
+# HR borderline
 plot_accuracy_for_category("Borderline")
 
-# 绘制对于30x下分类为No的分组图
+# HRP
 plot_accuracy_for_category("No")
 
 
@@ -650,70 +378,63 @@ plot_accuracy_for_category("No")
 
 
 
-#################################################################################ANOVA, t-test
 
-# 假设您的数据框架名为df，并且已经有了对应的测序深度列（30x, 20x, ... 0.1x）
-# 加载必要的库
+### Conduct statistical analysis (ANOVA & t-test)
+
+# Load the packages
 library(readr)
 library(dplyr)
 library(tidyr)
 library(reshape2)
+#set the working directory to the one that has the data files
+setwd("C:\\Users\\Yunkai Tang\\OneDrive\\文档")
 
-# 加载数据
 df <- read_csv("filtered_326_HRD_value.csv")
-
-# 查看数据的前几行
 head(df)
-
-# 加载必要的库
-
-
-# 将数据从宽格式转换为长格式
+# Process the data to the format that can be conducted statistical analysis
 df_long <- reshape2::melt(df, id.vars = "SampleID", 
                           measure.vars = c("30x", "20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x"),
                           variable.name = "Depth", value.name = "HRD_Value")
 
-# 进行不分组ANOVA分析
+# Conduct one-way ANOVA
 anova_result <- aov(HRD_Value ~ Depth, data = df_long)
 summary(anova_result)
 
 
 
 
-# 进行分组ANOVA分析
+# Conduct ANOVA in diferrent HR subgroups (HRD, HR borderline, HRP)
 
-# 加载必要的库
+# load the packages
 library(readr)
 library(dplyr)
 library(tidyr)
 library(reshape2)
 library(stats)
 
-# 假设df是您的原始数据框架
-# 首先，计算HRD状态
+# Calculate HR statuses
 df$HRD_Status <- ifelse(df$`30x` < 15, "HRP",
                         ifelse(df$`30x` <= 19, "Borderline", "HRD"))
 
-# 将数据从宽格式转换为长格式
+# Convert data from wide format to long format
 df_long <- melt(df, id.vars = c("SampleID", "HRD_Status"), 
                 measure.vars = c("30x", "20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x"),
                 variable.name = "Depth", value.name = "HRD_Value")
 
 
 
-# 分组进行ANOVA分析
+# Conduct ANOVA in different groups
 results <- list()
 
 for (status in c("HRD", "HRP", "Borderline")) {
-  # 过滤特定组的数据
+  # filter the data by different HR statuses
   df_filtered <- df_long %>% filter(HRD_Status == status)
   
-  # 对过滤后的数据进行ANOVA
+  # Conduct ANOVA on filtered data
   anova_result <- aov(HRD_Value ~ Depth, data = df_filtered)
   results[[status]] <- summary(anova_result)
 }
 
-# 输出结果
 print(results$HRD)
 print(results$HRP)
 print(results$Borderline)
@@ -721,15 +442,12 @@ print(results$Borderline)
 
 
 
-#t检验
 
-# 加载必要的库
+# t-test
+
+# load the package
 library(tidyverse)
 
-# 假设df_long是包含所有样本在所有深度下的HRD值的长格式数据框架
-# 并且它有三列：SampleID（样本ID），Depth（深度），HRD_Value（HRD值）
-
-# 首先，将数据分割成以30x和其他深度为组的配对数据
 depths_to_compare <- c("20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x")
 results <- list()
 
@@ -737,224 +455,77 @@ for (depth in depths_to_compare) {
   df_30x <- df_long %>% filter(Depth == "30x")
   df_depth <- df_long %>% filter(Depth == depth)
   
-  # 确保按SampleID对齐
   df_merged <- merge(df_30x, df_depth, by = "SampleID", suffixes = c("_30x", sprintf("_%s", depth)))
   
-  # 执行配对t检验
+  # Conduct t-test
   t_test_result <- t.test(df_merged$HRD_Value_30x, df_merged[[paste0("HRD_Value_", depth)]], paired = TRUE)
   
-  # 存储结果
   results[[depth]] <- t_test_result
 }
 
-# 输出结果
 results
 
 
-
-
-
-# 加载tidyverse包，它包括dplyr和其他有用的函数
-library(tidyverse)
-
-# 假设df_long已经被加载并且包含SampleID, HRD_Status, Depth, HRD_Value列
-
-# 定义需要比较的深度
-depths_to_compare <- c("20x", "5x", "1x", "0.8x", "0.6x", "0.5x", "0.4x", "0.3x", "0.2x", "0.1x")
-
-# 获取独特的HRD状态值
-hrd_statuses <- unique(df_long$HRD_Status)
-
-# 确保输出是干净的，没有前一个命令的错误
-print(hrd_statuses)
-print(depths_to_compare)
-
-
-
-
-
+# Conduct t-test in different HR status groups
 
 results <- list()
 
 for(status in hrd_statuses) {
   for(depth in depths_to_compare) {
-    # 筛选出当前状态下30x的数据
+    
     df_30x <- df_long %>% filter(Depth == "30x", HRD_Status == status)
-    # 筛选出当前深度下的数据
+    
     df_depth <- df_long %>% filter(Depth == depth, HRD_Status == status)
-    # 确保按SampleID对齐
+   
     df_merged <- merge(df_30x, df_depth, by = "SampleID", suffixes = c("_30x", paste0("_", depth)))
-    # 执行配对t检验
+  
     t_test_result <- t.test(df_merged$HRD_Value_30x, df_merged[[paste0("HRD_Value_", depth)]], paired = TRUE)
-    # 存储结果
+   
     results[[paste(status, depth, sep = "_")]] <- t_test_result
   }
 }
 
-# 查看结果
 results
 
 
 
-####################################################################### Checking CCNE1 in tumor samples
-# 加载所需的库
-library(ggplot2)
 
-# 加载数据
-df_ccne_cnv <- read.csv("filtered_CCNE_CNV.csv")
-df_hrd_value <- read.csv("filtered_326_HRD_value.csv")
 
-# 合并数据集基于SampleID
-merged_data <- merge(df_ccne_cnv, df_hrd_value, by = "SampleID")
 
-# 绘制散点图
-ggplot(merged_data, aes(x = TCN, y = X30x)) + 
-  geom_point(alpha = 0.6) +
-  ggtitle("Correlation between TCN and 30x HRD Values") +
-  xlab("TCN Value") +
-  ylab("30x HRD Value") +
-  theme_minimal() +
-  xlim(0, NA) + ylim(0, NA) # 确保坐标轴从原点开始
+# Checking CCNE1 in tumor samples and draw the contour plot
 
 library(ggplot2)
 library(dplyr)
 library(readr)
 
-# 读取数据
+# Read the data
+setwd("C:\\Users\\Yunkai Tang\\OneDrive\\文档")
 ccne_cnv_df <- read_csv("filtered_CCNE_CNV.csv")
 hrd_value_df <- read_csv("filtered_326_HRD_value.csv")
 
-# 合并数据集，确保包含TCN和HRD值
+# Combine the CCNE1 TCN data and HR score data
 merged_df <- merge(ccne_cnv_df, hrd_value_df, by = "SampleID") %>%
   select(SampleID, TCN, `30x`)
 
-# 重命名列以方便理解
 merged_df <- merged_df %>%
   rename(HRD_value = `30x`)
 
-# 等高线图
+# Draw the contour plot
 ggplot(merged_df, aes(x = TCN, y = HRD_value)) +
   geom_density_2d_filled() +
   labs(title = "Contour Plot of TCN vs HRD Value",
        x = "TCN", y = "HRD Value") +
   theme_minimal()
 
-  
 
-####################################################
 
-library(ggplot2)
-library(dplyr)
-library(readr)
+# Draw a clearer version
 
-# 假设之前的数据读取和合并步骤相同
-
-# 使用stat_density_2d计算并填充等高线
 ggplot(merged_df, aes(x = TCN, y = HRD_value)) +
-  stat_density_2d(aes(fill = ..level..), geom = "polygon") +  # 计算密度并填充
+  stat_density_2d(aes(fill = ..level..), geom = "polygon") +  
   scale_fill_gradientn(colors = c("darkblue", "yellow", "orange"), 
-                       values = scales::rescale(c(0, 0.5, 1))) +  # 自定义颜色梯度
-  labs(title = "Contour Plot of TCN vs HRD Value with Custom Color Gradient", 
-       x = "TCN", y = "HRD Value") +
-  theme_minimal()
-#############################################################
-
-
-
-
-
-
-library(ggplot2)
-library(dplyr)
-library(readr)
-
-# 假设之前的数据读取和合并步骤相同
-
-# 使用stat_density_2d计算并填充等高线
-ggplot(merged_df, aes(x = TCN, y = HRD_value)) +
-  stat_density_2d(aes(fill = ..level..), geom = "polygon") +  # 计算密度并填充
-  scale_fill_gradientn(colors = c("darkblue", "yellow", "orange"), 
-                       values = scales::rescale(c(0, 0.5, 1))) +  # 自定义颜色梯度
+                       values = scales::rescale(c(0, 0.5, 1))) +  
   labs(title = "Contour Plot of TCN vs HRD Value with Custom Color Gradient", 
        x = "TCN", y = "HRD Value") +
   theme_minimal()
 
-
-
-library(ggplot2)
-library(dplyr)
-library(readr)
-library(akima)
-
-# 假设merged_df已经准备好了
-
-# 使用akima包的interp函数对数据进行插值
-interp_data <- with(merged_df, interp(x = TCN, y = HRD_value, duplicate = "strip"))
-
-# 将插值结果转换为数据框，以便于ggplot2处理
-interp_df <- expand.grid(TCN = interp_data$x, HRD_value = interp_data$y) %>%
-  mutate(z = c(interp_data$z))
-
-# 使用插值后的数据绘制等高线图
-ggplot(interp_df, aes(x = TCN, y = HRD_value, z = z)) +
-  geom_contour_filled(aes(fill = stat(level)), binwidth = 1) +
-  scale_fill_gradientn(colors = c("darkblue", "yellow", "orange")) +
-  labs(title = "Smoothed Contour Plot of TCN vs HRD Value", 
-       x = "TCN", y = "HRD Value") +
-  theme_minimal()
-
-
-
-  ################################################ Checking germline BRCA mutations
-  # Load the necessary libraries
-library(ggplot2)
-library(RColorBrewer)
-
-# Load the datasets
-df_ccne_cnv <- read.csv("filtered_CCNE_CNV.csv")
-df_hrd_value <- read.csv("filtered_326_HRD_value.csv")
-
-# Merge the datasets based on SampleID
-merged_data <- merge(df_ccne_cnv, df_hrd_value, by = "SampleID")
-
-# Extract the first digit from SampleID to create a PatientID column
-merged_data$PatientID <- as.integer(sub("^([0-9]+).*", "\\1", merged_data$SampleID))
-
-# Create a dataframe with the BRCA status for each patient
-brca_status <- data.frame(
-  PatientID = 1:22,
-  BRCA_Status = c("wild", "wild", "wild", "wild", "wild", "wild", 
-                  "wild", "BRCA1", "wild", "BRCA2", "wild", "wild", 
-                  "wild", "wild", "wild", "wild", "BRCA1", "wild", 
-                  "BRCA2", "wild", "wild", "BRCA2")
-)
-
-# Merge the BRCA status information into the main dataset
-merged_data_with_brca <- merge(merged_data, brca_status, by = "PatientID")
-
-
-
-# Create the plot showing the distribution of 30x HRD values by BRCA status
-p <- ggplot(merged_data_with_brca, aes(x = BRCA_Status, y = X30x, fill = BRCA_Status)) +
-  geom_boxplot() +
-  scale_fill_manual(values = c("wild" = "skyblue", "BRCA1" = "salmon", "BRCA2" = "limegreen")) +
-  ggtitle("Distribution of 30x HRD Values by BRCA Status") +
-  xlab("BRCA Status") +
-  ylab("30x HRD Value") +
-  theme_minimal()
-
-# Print the plot
-print(p)
-
-
-
-
-# ANOVA to check if there are any significant differences among the groups
-anova_result <- aov(X30x ~ BRCA_Status, data = merged_data_with_brca)
-summary(anova_result)
-
-# If ANOVA shows significant differences, proceed with Tukey's HSD test
-if(summary(anova_result)[[1]]$'Pr(>F)'[1] < 0.05) {
-  tukey_result <- TukeyHSD(anova_result)
-  print(tukey_result)
-}
